@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz App</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(to right, #3a7bd5, #00d2ff);
+      padding: 16px;
+    }
+
+    .quiz-container {
+      width: 100%;
+      max-width: 620px;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+      padding: 22px;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .category {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1f3b73;
+      background: #eef4ff;
+      padding: 8px 12px;
+      border-radius: 999px;
+    }
+
+    .badge {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1f3b73;
+      background: #eef4ff;
+      padding: 8px 12px;
+      border-radius: 999px;
+    }
+
+    .timer {
+      color: #d9534f;
+    }
+
+    .progress-wrap {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: #dfe8f7;
+      overflow: hidden;
+      margin: 10px 0 14px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #28a745, #00c853);
+      transition: width 0.3s ease;
+    }
+
+    h2 {
+      margin: 4px 0 6px;
+      color: #1f3b73;
+      text-align: center;
+    }
+
+    #questionNo {
+      text-align: center;
+      color: #4a5568;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    #question {
+      margin: 14px 0 16px;
+      font-size: 22px;
+      color: #111;
+      min-height: 64px;
+      text-align: center;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .option {
+      width: 100%;
+      padding: 13px 14px;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      background: #3a7bd5;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      text-align: left;
+      transition: 0.2s ease;
+      outline: none;
+    }
+
+    .option:hover {
+      background: #155fa0;
+      transform: translateY(-1px);
+    }
+
+    .option.selected {
+      background: #155fa0;
+      border-color: #0f4478;
+    }
+
+    .option.correct {
+      background: #28a745 !important;
+      border-color: #1f7a32;
+    }
+
+    .option.wrong {
+      background: #dc3545 !important;
+      border-color: #a71d2a;
+    }
+
+    .option:disabled {
+      cursor: not-allowed;
+      opacity: 0.97;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .buttons button {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+      font-size: 15px;
+      transition: 0.2s ease;
+    }
+
+    .prev-btn { background: #6c757d; }
+    .next-btn { background: #00a8ff; }
+    .restart-btn { background: #28a745; }
+
+    .buttons button:hover {
+      opacity: 0.92;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      font-size: 14px;
+      color: #444;
+    }
+
+    .stats span {
+      background: #f4f8ff;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    #hint {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #666;
+      text-align: center;
+    }
+
+    @media (max-width: 520px) {
+      .quiz-container { padding: 18px; }
+      #question { font-size: 19px; }
+      .buttons button { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container" id="quizContainer">
+    <div class="top-row">
+      <div class="category">Category: Web Development</div>
+      <div class="badge timer">Time: <span id="time">45:00</span></div>
+    </div>
+
+    <h2>Online Quiz App</h2>
+    <div id="questionNo">Question 1 / 30</div>
+
+    <div class="progress-wrap" aria-label="Quiz progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="top-row">
+      <div class="badge" id="highScore">High Score: 0</div>
+      <div class="badge" id="scoreBadge">Score: 0</div>
+    </div>
+
+    <h3 id="question"></h3>
+
+    <div class="options">
+      <button class="option" onclick="selectOption(0)"></button>
+      <button class="option" onclick="selectOption(1)"></button>
+      <button class="option" onclick="selectOption(2)"></button>
+      <button class="option" onclick="selectOption(3)"></button>
+    </div>
+
+    <div class="buttons">
+      <button class="prev-btn" onclick="prevQuestion()">Previous</button>
+      <button class="next-btn" onclick="nextQuestion()">Next</button>
+    </div>
+
+    <div class="stats">
+      <span id="answeredCount">Answered: 0</span>
+      <span id="leftCount">Left: 30</span>
+    </div>
+
+    <div id="hint">Press Enter for Next / Submit.</div>
+  </div>
+
+  <script>
+    const originalQuestions = [
+      { question: "Which language runs in a web browser?", options: ["Python", "C++", "JavaScript", "Java"], answer: 2 },
+      { question: "What does HTML stand for?", options: ["Hyper Markup", "Hypertext Markup Language", "Home Tool Markup", "Hyper Mark Language"], answer: 1 },
+      { question: "CSS is used for?", options: ["Styling", "Database", "Logic", "None"], answer: 0 },
+      { question: "Which tag is used for largest heading?", options: ["<h6>", "<head>", "<h1>", "<title>"], answer: 2 },
+      { question: "Which symbol is used for comments in JavaScript?", options: ["<!-- -->", "//", "##", "**"], answer: 1 },
+      { question: "Which method converts JSON text into JavaScript object?", options: ["JSON.parse()", "JSON.stringify()", "JSON.object()", "JSON.convert()"], answer: 0 },
+      { question: "Which company developed JavaScript?", options: ["Microsoft", "Google", "Netscape", "Apple"], answer: 2 },
+      { question: "Which HTML attribute is used for links?", options: ["src", "href", "link", "url"], answer: 1 },
+      { question: "Which property is used to change text color in CSS?", options: ["font-color", "text-color", "color", "foreground"], answer: 2 },
+      { question: "Which HTML tag is used to create a paragraph?", options: ["<p>", "<para>", "<pg>", "<text>"], answer: 0 },
+      { question: "Which device is used to store data permanently?", options: ["RAM", "ROM", "Cache", "Register"], answer: 1 },
+      { question: "What does CPU stand for?", options: ["Central Processing Unit", "Computer Personal Unit", "Central Program Unit", "Control Processing Unit"], answer: 0 },
+      { question: "Which input type is used for password field?", options: ["text", "password", "secret", "hidden"], answer: 1 },
+      { question: "Which symbol starts an ID selector in CSS?", options: [".", "#", "*", "@"], answer: 1 },
+      { question: "What does DOM stand for?", options: ["Document Object Model", "Data Object Method", "Digital Output Mode", "Document Oriented Model"], answer: 0 },
+      { question: "Which loop runs at least once?", options: ["for", "while", "do...while", "none"], answer: 2 },
+      { question: "Which keyword declares a constant in JavaScript?", options: ["let", "var", "const", "static"], answer: 2 },
+      { question: "Which HTML tag is used to link JS file?", options: ["<css>", "<script>", "<js>", "<link>"], answer: 1 },
+      { question: "Which method adds item at end of array?", options: ["push()", "pop()", "shift()", "unshift()"], answer: 0 },
+      { question: "Which CSS property controls font size?", options: ["text-size", "font-size", "size", "font-style"], answer: 1 },
+      { question: "Which operator checks value and type in JS?", options: ["==", "=", "===", "!="], answer: 2 },
+      { question: "Which HTML tag makes a line break?", options: ["<br>", "<lb>", "<break>", "<hr>"], answer: 0 },
+      { question: "Which company created Windows?", options: ["Apple", "Microsoft", "Google", "IBM"], answer: 1 },
+      { question: "Which method removes last array element?", options: ["push()", "pop()", "shift()", "slice()"], answer: 1 },
+      { question: "Which CSS layout uses rows and columns?", options: ["Flex", "Grid", "Float", "Block"], answer: 1 },
+      { question: "Which HTML attribute gives alternate text for image?", options: ["title", "alt", "desc", "text"], answer: 1 },
+      { question: "Which event occurs when user clicks a button?", options: ["hover", "click", "press", "submit"], answer: 1 },
+      { question: "Which JavaScript method prints output in console?", options: ["print()", "console.log()", "write()", "show()"], answer: 1 },
+      { question: "Which tag is used for unordered list?", options: ["<ol>", "<ul>", "<li>", "<list>"], answer: 1 },
+      { question: "Which CSS property is used for background color?", options: ["bgcolor", "background-color", "color-bg", "background"], answer: 1 }
+    ];
+
+    let questions = [];
+    let index = 0;
+    let selectedAnswers = [];
+    let time = 45 * 60;
+    let timer = null;
+    let finished = false;
+    let revealed = false;
+    const STORAGE_KEY = "quiz_high_score";
+
+    function shuffleArray(array) {
+      const arr = array.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function prepareQuestions() {
+      questions = originalQuestions.map(q => {
+        const correctText = q.options[q.answer];
+        const shuffledOptions = shuffleArray(q.options);
+        return {
+          question: q.question,
+          options: shuffledOptions,
+          answer: shuffledOptions.indexOf(correctText)
+        };
+      });
+      questions = shuffleArray(questions);
+      selectedAnswers = Array(questions.length).fill(-1);
+    }
+
+    function getHighScore() {
+      return Number(localStorage.getItem(STORAGE_KEY) || 0);
+    }
+
+    function setHighScore(score) {
+      localStorage.setItem(STORAGE_KEY, String(score));
+    }
+
+    function updateHighScoreUI(score) {
+      document.getElementById("highScore").innerText = `High Score: ${score}`;
+    }
+
+    function updateScoreBadge() {
+      document.getElementById("scoreBadge").innerText = `Score: ${calculateScore()}`;
+    }
+
+    function updateCounts() {
+      const answered = selectedAnswers.filter(v => v !== -1).length;
+      document.getElementById("answeredCount").innerText = `Answered: ${answered}`;
+      document.getElementById("leftCount").innerText = `Left: ${questions.length - answered}`;
+    }
+
+    function formatTime(totalSeconds) {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      document.getElementById("time").innerText = formatTime(time);
+
+      timer = setInterval(() => {
+        time--;
+        document.getElementById("time").innerText = formatTime(time);
+
+        if (time <= 0) {
+          clearInterval(timer);
+          showResult();
+        }
+      }, 1000);
+    }
+
+    function updateProgress() {
+      document.getElementById("questionNo").innerText = `Question ${index + 1} / ${questions.length}`;
+      const percent = ((index + 1) / questions.length) * 100;
+      document.getElementById("progressBar").style.width = percent + "%";
+    }
+
+    function loadQuestion() {
+      if (finished) return;
+
+      revealed = false;
+      const q = questions[index];
+      document.getElementById("question").innerText = q.question;
+      updateProgress();
+      updateScoreBadge();
+      updateCounts();
+
+      const btns = document.querySelectorAll(".option");
+      btns.forEach((btn, i) => {
+        btn.innerText = q.options[i];
+        btn.className = "option";
+        btn.disabled = false;
+      });
+
+      const currentSelected = selectedAnswers[index];
+      if (currentSelected !== -1) btns[currentSelected].classList.add("selected");
+    }
+
+    function selectOption(i) {
+      if (finished) return;
+      selectedAnswers[index] = i;
+      const btns = document.querySelectorAll(".option");
+      btns.forEach(btn => btn.classList.remove("selected"));
+      btns[i].classList.add("selected");
+      updateCounts();
+      updateScoreBadge();
+    }
+
+    function revealAnswer() {
+      if (revealed) return;
+      revealed = true;
+
+      const btns = document.querySelectorAll(".option");
+      const correct = questions[index].answer;
+      const selected = selectedAnswers[index];
+
+      btns.forEach(btn => btn.disabled = true);
+      btns[correct].classList.add("correct");
+      if (selected !== -1 && selected !== correct) btns[selected].classList.add("wrong");
+    }
+
+    function nextQuestion() {
+      if (finished) return;
+
+      revealAnswer();
+
+      if (index === questions.length - 1) {
+        setTimeout(showResult, 700);
+        return;
+      }
+
+      setTimeout(() => {
+        index++;
+        loadQuestion();
+      }, 350);
+    }
+
+    function prevQuestion() {
+      if (finished) return;
+      if (index > 0) {
+        index--;
+        loadQuestion();
+      }
+    }
+
+    function calculateScore() {
+      let score = 0;
+      selectedAnswers.forEach((ans, i) => {
+        if (ans === questions[i].answer) score++;
+      });
+      return score;
+    }
+
+    function showResult() {
+      if (finished) return;
+      finished = true;
+      clearInterval(timer);
+
+      const score = calculateScore();
+      const percent = Math.round((score / questions.length) * 100);
+      const highScore = Math.max(getHighScore(), score);
+      setHighScore(highScore);
+
+      document.getElementById("quizContainer").innerHTML = `
+        <h2>Quiz Completed!</h2>
+        <p style="font-size:18px; margin-top:12px;">Your Score: ${score} / ${questions.length}</p>
+        <p style="font-size:14px; color:#555;">Accuracy: ${percent}%</p>
+        <p style="font-size:14px; color:#555;">High Score: ${highScore}</p>
+        <button class="restart-btn" style="margin-top:18px; width:100%;" onclick="restartQuiz()">Restart Quiz</button>
+      `;
+    }
+
+    function restartQuiz() {
+      prepareQuestions();
+      index = 0;
+      time = 45 * 60;
+      finished = false;
+      revealed = false;
+
+      document.getElementById("quizContainer").innerHTML = `
+        <div class="top-row">
+          <div class="category">Category: Web Development</div>
+          <div class="badge timer">Time: <span id="time">45:00</span></div>
+        </div>
+
+        <h2>Online Quiz App</h2>
+        <div id="questionNo">Question 1 / ${questions.length}</div>
+
+        <div class="progress-wrap" aria-label="Quiz progress">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="top-row">
+          <div class="badge" id="highScore">High Score: ${getHighScore()}</div>
+          <div class="badge" id="scoreBadge">Score: 0</div>
+        </div>
+
+        <h3 id="question"></h3>
+
+        <div class="options">
+          <button class="option" onclick="selectOption(0)"></button>
+          <button class="option" onclick="selectOption(1)"></button>
+          <button class="option" onclick="selectOption(2)"></button>
+          <button class="option" onclick="selectOption(3)"></button>
+        </div>
+
+        <div class="buttons">
+          <button class="prev-btn" onclick="prevQuestion()">Previous</button>
+          <button class="next-btn" onclick="nextQuestion()">Next</button>
+        </div>
+
+        <div class="stats">
+          <span id="answeredCount">Answered: 0</span>
+          <span id="leftCount">Left: ${questions.length}</span>
+        </div>
+
+        <div id="hint">Press Enter for Next / Submit.</div>
+      `;
+
+      updateHighScoreUI(getHighScore());
+      loadQuestion();
+      startTimer();
+    }
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        nextQuestion();
+      }
+    });
+
+    prepareQuestions();
+    updateHighScoreUI(getHighScore());
+    loadQuestion();
+    startTimer();
+  </script>
+</body>
+</html>
