@@ -1,4 +1,4 @@
-# 🧠 Quiz App
+# Quiz App
 
 ##  Project Overview
 The Quiz App is an interactive web application that allows users to answer multiple-choice questions and receive their final score instantly. It is designed with a clean and user-friendly interface to provide an engaging quiz experience.
